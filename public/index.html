@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor 3D Profissional</title>
+
+    <!-- Bibliotecas Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128/examples/js/controls/OrbitControls.js"></script>
+
+    <style>
+        body { 
+            margin: 0; 
+            overflow: hidden; 
+            font-family: Arial, sans-serif; 
+        }
+        canvas { display: block; }
+
+        /* Barra de ferramentas superior */
+        .toolbar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px;
+            text-align: center;
+            color: white;
+        }
+        
+        .toolbar button {
+            background: #333;
+            color: white;
+            border: none;
+            padding: 10px;
+            margin: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            border-radius: 5px;
+        }
+
+        .toolbar button:hover {
+            background: #555;
+        }
+
+        /* Painel lateral */
+        .sidebar {
+            position: absolute;
+            top: 50px;
+            left: 10px;
+            width: 250px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .sidebar h3 {
+            margin: 0 0 10px;
+        }
+
+        .sidebar label, .sidebar button {
+            display: block;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .sidebar button {
+            background: #007bff;
+            color: white;
+            padding: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            border-radius: 5px;
+        }
+
+        .sidebar button:hover {
+            background: #0056b3;
+        }
+
+        /* Painel de propriedades do objeto selecionado */
+        .selected-object-panel {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+        }
+
+        /* Painel de lista de objetos */
+        .object-list-panel {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            width: 250px;
+            max-height: 300px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+            overflow-y: auto;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .panel-header button {
+            background: red;
+            color: white;
+            border: none;
+            padding: 3px 7px;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+
+        .panel-content p {
+            margin: 5px 0;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 3px;
+        }
+
+        .panel-content p:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Botão para abrir o painel */
+        .open-panel-btn {
+            position: absolute;
+            bottom: 10px;
+            left: 270px;
+            background: #007bff;
+            color: white;
+            padding: 10px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            border-radius: 5px;
+        }
+
+        .open-panel-btn:hover {
+            background: #0056b3;
+        }
+        /* Painel lateral direito */
+.right-sidebar {
+    position: absolute;
+    top: 50px;
+    right: 10px;
+    width: 200px;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+    font-size: 14px;
+}
+
+.right-sidebar h3 {
+    margin: 0 0 10px;
+    font-size: 16px;
+}
+
+.right-sidebar ul {
+    list-style: none;
+    padding: 0;
+}
+
+.right-sidebar ul li {
+    padding: 8px;
+    background: #f4f4f4;
+    margin-bottom: 5px;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.right-sidebar ul li:hover {
+    background: #ddd;
+}
+
+
+#Adicionar, #objectListPanel #Camera #Cenario #Luzes #Propriedades {
+    display: none;
+}
+
+
+    </style>
+</head>
+<body>
+
+    <!-- Barra superior -->
+    <div class="toolbar">
+        <button onclick="alternarEdicao()">✏️ Editar</button>
+        <button onclick="girarObjeto()">🔄 Girar</button>
+        <button  onclick="alternarPainel('Propriedades')">ℹ️ Ver Propriedades</button>
+        <button onclick="limparCena()">🗑️ Limpar Tudo</button>
+    </div>
+
+    <!-- Painel lateral para adicionar objetos -->
+    <div class="sidebar draggable" id="Adicionar">
+        <h3>🛠️ Adicionar Objeto</h3>
+        <label>Cor: <input type="color" id="cor"></label>
+        <label>Escala: <input type="number" id="escala" value="5" min="1"></label>
+        <button onclick="adicionarObjeto('cubo')">🟥 Adicionar Cubo</button>
+        <button onclick="adicionarObjeto('esfera')">🔵 Adicionar Esfera</button>
+        <button onclick="adicionarObjeto('cilindro')">🟠 Adicionar Cilindro</button>
+    </div>
+
+   
+  
+
+<!-- Painel lateral direito para mostrar as pastas -->
+<div class="right-sidebar">
+    <h3>📂 Pastas</h3>
+    <ul id="folderList">
+        <li onclick="alternarPainel('Camera')" >📷 Câmera</li>
+        <li onclick="alternarPainel('Cenario')" >🌍 Cenário</li>
+        <li onclick="alternarPainel('Luzes')" >🔦 Luzes</li>
+        <li onclick="alternarPainel('Adicionar')">🛠️ Adicionar Objeto</li>
+        <li onclick="alternarPainel('objectListPanel')">📦 Objetos</li>
+        
+
+    </ul>
+       
+</div>
+
+
+ <!-- Painel de propriedades -->
+ <div class="selected-object-panel" id="selectedObjectPanel">
+    <h4>📌 Objeto Selecionado</h4>
+    <p id="obj-info">Nenhum objeto selecionado.</p>
+</div>
+
+  <!-- Painel de lista de objetos -->
+  <div class="object-list-panel draggable" id="objectListPanel">
+    <div class="panel-header">
+        <span>📋 Objetos na Cena</span>
+        <button onclick="alternarPainel('objectListPanel')">❌</button>
+    </div>
+    <div id="objectListContent" class="panel-content">
+        <p>Nenhum objeto adicionado ainda.</p>
+    </div>
+</div>
+
+<div class="sidebar draggable" id="Camera">
+    <div class="panel-header">
+        <button onclick="alternarPainel('Camera')">❌</button>
+    </div>
+    <h3>Painel Camera</h3>
+    <p>Este painel pode ser movido.</p>
+</div>
+
+<div class="sidebar draggable" id="Luzes">
+    <div class="panel-header">
+        <button onclick="alternarPainel('Luzes')">❌</button>
+    </div>
+    <h3>Painel Luzes</h3>
+    <p>Este painel pode ser movido.</p>
+</div>
+
+
+<div class="object-list-panel draggable" id="Cenario">
+       <div class="panel-header">
+        <button onclick="alternarPainel('Cenario')">❌</button>
+    </div>
+    <h3>Lista de Objetos no Cenário</h3>
+    <p>Arraste este painel.</p>
+</div>
+
+<div class="right-sidebar draggable" id="Propriedades">
+    <label>Tamanho da Grade: <input type="number" id="gridSize" value="200" min="10"></label><br>
+    <label>Escala Grid: <input type="number" id="escalaGrid" value="50" min="1"></label><br>
+    <label>X: <input type="number" id="gridX" value="0"></label>
+    <label>Y: <input type="number" id="gridY" value="0"></label>
+    <label>Z: <input type="number" id="gridZ" value="0"></label><br>
+    <button onclick="atualizarGrade()">✅ Atualizar Grade</button>
+
+    <h3>Painel Direito de Propriedades</h3>
+    <p>Este também pode ser movido.</p>
+</div>
+
+
+   
+
+    <!-- Script JS -->
+ <script src="js/script.js"></script> 
+
+ <script>
+
+function fecharPainel() {
+    document.getElementById("objectListPanel").style.display = "none";
+}
+
+function alternarAdicionar() {
+    let painel = document.getElementById("Adicionar");
+    painel.style.display = (painel.style.display === "none" || painel.style.display === "") ? "block" : "none";
+}
+
+function alternarPainel(id) {
+    let painel = document.getElementById(id);
+    painel.style.display = (painel.style.display === "none" || painel.style.display === "") ? "block" : "none";
+}
+
+function alternarCamera(id) {
+    let painel = document.getElementById(id);
+    painel.style.display = (painel.style.display === "none" || painel.style.display === "") ? "block" : "none";
+}
+
+function alternarCenario(id) {
+    let painel = document.getElementById(id);
+    painel.style.display = (painel.style.display === "none" || painel.style.display === "") ? "block" : "none";
+}
+
+function alternarLuzes(id) {
+    let painel = document.getElementById(id);
+    painel.style.display = (painel.style.display === "none" || painel.style.display === "") ? "block" : "none";
+}
+
+function alternarSelecionar(id) {
+    let painel = document.getElementById(id);
+    painel.style.display = (painel.style.display === "none" || painel.style.display === "") ? "block" : "none";
+}
+
+function alternarPropriedades(id) {
+    let painel = document.getElementById(id);
+    painel.style.display = (painel.style.display === "none" || painel.style.display === "") ? "block" : "none";
+}
+
+
+
+
+
+
+
+document.addEventListener("DOMContentLoaded", function () {
+    function makeDraggable(element) {
+        let isDragging = false;
+        let offsetX, offsetY;
+
+        element.addEventListener("mousedown", function (e) {
+            isDragging = true;
+            offsetX = e.clientX - element.getBoundingClientRect().left;
+            offsetY = e.clientY - element.getBoundingClientRect().top;
+            element.style.position = "absolute";
+            element.style.zIndex = "1000"; // Garante que o painel fique sobre os outros
+        });
+
+        document.addEventListener("mousemove", function (e) {
+            if (isDragging) {
+                element.style.left = e.clientX - offsetX + "px";
+                element.style.top = e.clientY - offsetY + "px";
+            }
+        });
+
+        document.addEventListener("mouseup", function () {
+            isDragging = false;
+        });
+    }
+
+    // Aplicar a função para os painéis
+    document.querySelectorAll(".draggable").forEach((panel) => {
+        makeDraggable(panel);
+    });
+});
+
+ </script>
+
+</body>
+</html>
