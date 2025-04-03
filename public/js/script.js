@@ -200,9 +200,14 @@ function limparCena() {
     objetos = [];
 }
 
+
+
+
 // ==============================
 // 7. Girar Objeto Selecionado
 // ==============================
+
+
 function girarObjeto() {
     if (objetoSelecionado) {
         objetoSelecionado.rotation.y += Math.PI / 12; // Gira um pouco menos por vez
@@ -270,6 +275,14 @@ function atualizarListaObjetos() {
         painel.appendChild(item);
     });
 }
+function removerObjeto(index) {
+    if (index >= 0 && index < objetos.length) {
+        scene.remove(objetos[index]); // Remove da cena
+        objetos.splice(index, 1); // Remove da lista
+        atualizarListaObjetos(); // Atualiza a lista
+        atualizarPainelObjeto(); // Atualiza o painel de propriedades
+    }
+}
 
 // ==============================
 // Seleciona um objeto ao clicar na lista
@@ -307,6 +320,25 @@ function atualizarPainelObjeto() {
         painel.style.display = "none";
     }
 }
+
+// Função para deletar o objeto selecionado
+function deletarObjeto() {
+    if (objetoSelecionado) {
+        // Remove da cena
+        scene.remove(objetoSelecionado);
+        
+        // Remove do array de objetos
+        let index = objetos.indexOf(objetoSelecionado);
+        if (index > -1) {
+            objetos.splice(index, 1);
+        }
+
+        // Reseta seleção
+        objetoSelecionado = null;
+        atualizarPainelObjeto();
+    }
+}
+
 
 // Modifique a função adicionarObjeto para atualizar a lista sempre que um objeto for adicionado
 function adicionarObjeto(tipo) {
