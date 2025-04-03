@@ -371,4 +371,3 @@ function adicionarObjeto(tipo) {
     atualizarListaObjetos();
 }
 
-
