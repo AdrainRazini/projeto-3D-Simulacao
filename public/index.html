@@ -8,7 +8,6 @@
     <!-- Bibliotecas Three.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128/examples/js/controls/OrbitControls.js"></script>
-
     <style>
         body { 
             margin: 0; 
@@ -16,6 +15,17 @@
             font-family: Arial, sans-serif; 
         }
         canvas { display: block; }
+
+
+
+
+.displayfx {
+    display: flex;
+    padding-left: 5%;
+    gap: 20px; /* Espaçamento entre os itens */
+    flex-wrap: wrap; /* Permite que os itens se ajustem em várias linhas se necessário */
+}
+
 
 
         #propertiesPanel {
@@ -244,10 +254,25 @@
     border-radius: 5px;
     display: none; /* Oculto por padrão */
     overflow-y: auto;
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+
     text-align: center; /* Alinha o conteúdo dentro do painel */
 }
 
+        
+@keyframes neon-border {
+    0%   { border-color: #ff0000; box-shadow: 0 0 10px #ff0000; }
+    25%  { border-color: #00ff00; box-shadow: 0 0 10px #00ff00; }
+    50%  { border-color: #0000ff; box-shadow: 0 0 10px #0000ff; }
+    75%  { border-color: #ff00ff; box-shadow: 0 0 10px #ff00ff; }
+    100% { border-color: #ff0000; box-shadow: 0 0 10px #ff0000; }
+}
+
+.neon-box {
+    border: 2px solid #ff0000; /* Borda inicial obrigatória */
+    padding: 15px;
+    border-radius: 10px;
+    animation: neon-border 2s infinite linear;
+}
 
 
     </style>
@@ -351,7 +376,7 @@
 </div>
 
 
-<div class="object-Adrian-panel draggable" id="Adrian">
+<div class="object-Adrian-panel neon-box draggable" id="Adrian">
     <div class="panel-header">
      <button onclick="alternarPainel('Adrian')">❌</button>
  </div>
